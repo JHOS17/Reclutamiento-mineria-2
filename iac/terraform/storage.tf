@@ -398,3 +398,27 @@ resource "aws_s3_bucket_notification" "cvs_replica" {
   bucket      = aws_s3_bucket.cvs_replica.id
   eventbridge = true
 }
+
+# CKV_AWS_144: los registros de uso solo existian en una region; ahora se copian a la region secundaria
+resource "aws_s3_bucket_replication_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  role   = aws_iam_role.replicacion_registros.arn
+
+  rule {
+    id     = "replica-registros"
+    status = "Enabled"
+
+    filter {}
+
+    delete_marker_replication {
+      status = "Enabled"
+    }
+
+    destination {
+      bucket        = aws_s3_bucket.cvs_replica.arn
+      storage_class = "STANDARD_IA"
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.logs, aws_s3_bucket_versioning.cvs_replica]
+}

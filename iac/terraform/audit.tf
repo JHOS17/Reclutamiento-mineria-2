@@ -202,3 +202,86 @@ resource "aws_s3_bucket_notification" "trail" {
   bucket      = aws_s3_bucket.trail.id
   eventbridge = true
 }
+
+resource "aws_iam_role" "replicacion_registros" {
+  name = "${local.name}-replicacion-registros"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "s3.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "replicacion_registros" {
+  name = "replicar-registros"
+  role = aws_iam_role.replicacion_registros.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetReplicationConfiguration", "s3:ListBucket"]
+        Resource = [aws_s3_bucket.trail.arn, aws_s3_bucket.logs.arn]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObjectVersionForReplication", "s3:GetObjectVersionAcl", "s3:GetObjectVersionTagging"]
+        Resource = ["${aws_s3_bucket.trail.arn}/*", "${aws_s3_bucket.logs.arn}/*"]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:ReplicateObject", "s3:ReplicateDelete", "s3:ReplicateTags"]
+        Resource = "${aws_s3_bucket.cvs_replica.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = aws_kms_key.main.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Encrypt", "kms:GenerateDataKey"]
+        Resource = aws_kms_key.replica.arn
+      }
+    ]
+  })
+}
+
+# CKV_AWS_144: la auditoria solo existia en una region; ahora se copia a la region secundaria
+resource "aws_s3_bucket_replication_configuration" "trail" {
+  bucket = aws_s3_bucket.trail.id
+  role   = aws_iam_role.replicacion_registros.arn
+
+  rule {
+    id     = "replica-auditoria"
+    status = "Enabled"
+
+    filter {}
+
+    delete_marker_replication {
+      status = "Enabled"
+    }
+
+    source_selection_criteria {
+      sse_kms_encrypted_objects {
+        status = "Enabled"
+      }
+    }
+
+    destination {
+      bucket        = aws_s3_bucket.cvs_replica.arn
+      storage_class = "STANDARD_IA"
+
+      encryption_configuration {
+        replica_kms_key_id = aws_kms_key.replica.arn
+      }
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.trail, aws_s3_bucket_versioning.cvs_replica]
+}
