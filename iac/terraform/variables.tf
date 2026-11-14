@@ -76,6 +76,12 @@ variable "db_backup_days" {
   default     = 7
 }
 
+variable "db_deletion_protection" {
+  description = "Proteccion contra borrado de RDS"
+  type        = bool
+  default     = true
+}
+
 variable "db_max_connections_alarm" {
   description = "Conexiones de RDS que disparan la alarma"
   type        = number
@@ -83,9 +89,15 @@ variable "db_max_connections_alarm" {
 }
 
 variable "deletion_protection" {
-  description = "Proteccion contra borrado del ALB y RDS"
+  description = "Proteccion contra borrado de los buckets"
   type        = bool
   default     = false
+}
+
+variable "alb_deletion_protection" {
+  description = "Proteccion contra borrado del ALB"
+  type        = bool
+  default     = true
 }
 
 variable "alert_email" {
@@ -112,4 +124,10 @@ locals {
     Grupo         = "G3"
     GestionadoPor = "Terraform"
   }
+}
+
+variable "waf_rate_limit" {
+  description = "Solicitudes por IP cada 5 minutos antes de responder 429"
+  type        = number
+  default     = 300
 }

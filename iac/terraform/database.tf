@@ -67,7 +67,9 @@ resource "aws_cloudwatch_log_group" "rds" {
   kms_key_id        = aws_kms_key.main.arn
 }
 
+# CKV_AWS_293: la base de datos se podia borrar por error
 resource "aws_db_instance" "main" {
+  #checkov:skip=CKV_AWS_157:Una sola zona por la capa gratuita; si falla se restaura desde el respaldo en la zona B en maximo 30 minutos
   identifier                            = "${local.name}-postgres"
   engine                                = "postgres"
   engine_version                        = var.db_engine_version
@@ -90,8 +92,8 @@ resource "aws_db_instance" "main" {
   backup_window                         = "07:00-08:00"
   maintenance_window                    = "sun:08:30-sun:09:30"
   copy_tags_to_snapshot                 = true
-  deletion_protection                   = var.deletion_protection
-  skip_final_snapshot                   = !var.deletion_protection
+  deletion_protection                   = var.db_deletion_protection
+  skip_final_snapshot                   = !var.db_deletion_protection
   final_snapshot_identifier             = "${local.name}-postgres-final"
   iam_database_authentication_enabled   = true
   auto_minor_version_upgrade            = true
