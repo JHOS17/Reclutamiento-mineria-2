@@ -16,6 +16,17 @@ permissions:
     contents: read
 
 jobs:
+    Probar-Backend:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: '17'
+                  cache: maven
+            - run: mvn -B -f backend/pom.xml verify
+
     Validar-Infraestructura:
         runs-on: ubuntu-latest
         steps:
@@ -24,9 +35,9 @@ jobs:
             - uses: hashicorp/setup-terraform@v3
               with:
                   terraform_version: 1.10.5
-            - run: terraform -chdir=IAC fmt -check -recursive
-            - run: terraform -chdir=IAC init -backend=false
-            - run: terraform -chdir=IAC validate
+            - run: terraform -chdir=iac/terraform fmt -check -recursive
+            - run: terraform -chdir=iac/terraform init -backend=false
+            - run: terraform -chdir=iac/terraform validate
 
     Publicar-en-AWS:
         runs-on: ubuntu-latest
@@ -48,11 +59,11 @@ jobs:
               with:
                   terraform_version: 1.10.5
                   terraform_wrapper: false
-            - run: terraform -chdir=IAC init -backend-config="bucket=${{vars.TF_STATE_BUCKET}}" -backend-config="region=${{vars.AWS_REGION}}"
-            - run: terraform -chdir=IAC plan -input=false -var="aws_region=${{vars.AWS_REGION}}" -out=tfplan
-            - run: terraform -chdir=IAC apply -input=false -auto-approve tfplan
+            - run: terraform -chdir=iac/terraform init -backend-config="bucket=${{vars.TF_STATE_BUCKET}}" -backend-config="region=${{vars.AWS_REGION}}"
+            - run: terraform -chdir=iac/terraform plan -input=false -var="aws_region=${{vars.AWS_REGION}}" -out=tfplan
+            - run: terraform -chdir=iac/terraform apply -input=false -auto-approve tfplan
             - id: salida
-              run: echo "web_url=$(terraform -chdir=IAC output -json | jq -r '.web_url.value // empty')" >> "$GITHUB_OUTPUT"
+              run: echo "web_url=$(terraform -chdir=iac/terraform output -json | jq -r '.web_url.value // empty')" >> "$GITHUB_OUTPUT"
 
     Comprobar-Publicacion:
         runs-on: ubuntu-latest
