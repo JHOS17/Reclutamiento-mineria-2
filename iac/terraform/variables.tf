@@ -113,3 +113,9 @@ locals {
     GestionadoPor = "Terraform"
   }
 }
+
+variable "waf_rate_limit" {
+  description = "Solicitudes por IP cada 5 minutos antes de responder 429"
+  type        = number
+  default     = 300
+}

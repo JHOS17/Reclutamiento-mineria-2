@@ -12,9 +12,9 @@ resource "aws_security_group" "alb" {
   }
 
   egress {
-    description = "Hacia las instancias EC2"
-    from_port   = 80
-    to_port     = 80
+    description = "HTTPS hacia las instancias EC2"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = aws_subnet.public[*].cidr_block
   }
@@ -30,9 +30,9 @@ resource "aws_security_group" "web" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description     = "HTTP solo desde el ALB"
-    from_port       = 80
-    to_port         = 80
+    description     = "HTTPS solo desde el ALB"
+    from_port       = 443
+    to_port         = 443
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }

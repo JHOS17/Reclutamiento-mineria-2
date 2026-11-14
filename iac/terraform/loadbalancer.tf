@@ -21,16 +21,18 @@ resource "aws_lb" "main" {
   depends_on = [aws_s3_bucket_policy.logs]
 }
 
+# CKV_AWS_378: el balanceador enviaba los datos a los servidores sin cifrar
 resource "aws_lb_target_group" "web" {
-  name                 = "${local.name}-web-tg"
-  port                 = 80
-  protocol             = "HTTP"
+  name_prefix          = "web-"
+  port                 = 443
+  protocol             = "HTTPS"
   vpc_id               = aws_vpc.main.id
   target_type          = "instance"
   deregistration_delay = 30
 
   health_check {
     enabled             = true
+    protocol            = "HTTPS"
     path                = "/api/health"
     matcher             = "200"
     interval            = 15
@@ -41,6 +43,10 @@ resource "aws_lb_target_group" "web" {
 
   tags = {
     Name = "${local.name}-web-tg"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
