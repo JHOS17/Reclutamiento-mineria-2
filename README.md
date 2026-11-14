@@ -24,40 +24,47 @@ https://github.com/hashicorp/setup-terraform
 
 ## Terraform base
 main.tf: version de Terraform, provider de AWS y backend S3 (el estado se guarda en lab09/dev/terraform.tfstate).
-variables.tf: region, ambiente, prefijo de nombres y tipo de instancia.
+variables.tf: region principal y secundaria, entorno, prefijo, red, tamano del Auto Scaling, base de datos y correo de alertas.
 
 Fuentes:
 https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 https://developer.hashicorp.com/terraform/language/backend/s3
 https://developer.hashicorp.com/terraform/language/values/variables
 
-## Red
-network.tf: VPC, internet gateway, subred publica y tabla de rutas.
+## Primer avance: infraestructura base
+Sigue el diagrama de arquitectura en la region us-east-2. El backend y el frontend se agregan despues; por ahora cada EC2 corre un contenedor Nginx con una pagina de prueba y /api/health.
+
+| Archivo | Componente del diagrama | Que crea |
+|---|---|---|
+| network.tf | VPC, internet gateway, subredes | VPC en las zonas A y B, una subred publica y una privada por zona, tablas de rutas, endpoint de S3 y flow logs |
+| security.tf | Security groups | El ALB recibe HTTP, las EC2 solo aceptan trafico del ALB y RDS solo de las EC2 |
+| loadbalancer.tf | 4. Application Load Balancer | ALB en las subredes publicas A y B, target group con health check en /api/health y logs de acceso en S3 |
+| compute.tf, templates/user_data.sh.tftpl | 5. EC2 con Auto Scaling | Launch template con Amazon Linux 2023, IMDSv2 y disco cifrado; Auto Scaling de 1 a 3 instancias que agrega una si la CPU pasa de 70 %; Docker con Nginx y logs en CloudWatch |
+| database.tf | 6. RDS principal | PostgreSQL 16 en la subred privada, cifrada, con respaldos automaticos de 7 dias, SSL obligatorio y contrasena en Secrets Manager |
+| storage.tf | 10. Amazon S3 y copia diaria | Bucket de CVs con versionado y cifrado, replicado al bucket de la region secundaria (sa-east-1), y bucket de logs |
+| monitoring.tf | 11. CloudWatch y SNS | Tema SNS con correo al equipo, alarmas (errores 5xx, latencia, instancias no sanas, CPU, conexiones y espacio de RDS) y dashboard |
+| audit.tf | CloudTrail | Registro de auditoria con validacion de archivos, bucket propio y envio a CloudWatch |
+| kms.tf | Cifrado | Llaves KMS con rotacion en la region principal y en la secundaria |
+
+Quedan para los siguientes avances: CloudFront con ACM y HTTPS, Cognito, SQS con DLQ, Lambda y la RDS restaurada.
+
+outputs.tf: muestra la URL del ALB (web_url), el Auto Scaling Group, el endpoint de RDS, los buckets, el tema SNS y el dashboard.
+
+Para recibir las alarmas, pasar el correo con `-var="alert_email=correo@ejemplo.com"`.
 
 Fuentes:
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table
-
-## Security group
-security.tf: deja entrar HTTP por el puerto 80.
-
-Fuentes:
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-
-## EC2
-compute.tf: instancia t3.micro con Amazon Linux 2023. Con user_data se instala Apache y muestra una pagina.
-
-Fuentes:
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_replication_configuration
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html
 
 ## Configuracion AWS y GitHub
 - Region us-east-2, MFA, alerta de presupuesto y bucket S3 para el estado
 - Proveedor OIDC de GitHub y rol lab09-github-actions-dev (plantillas en iam/)
+- iam/terraform-policy.json ahora incluye los servicios del avance (ELB, Auto Scaling, RDS, S3, SNS, KMS, CloudWatch, CloudTrail y los roles minero-*). Hay que reemplazar <TF_STATE_BUCKET> y <AWS_ACCOUNT_ID> y actualizar la politica del rol antes del primer apply
 - Environment dev y variables AWS_REGION, AWS_ROLE_ARN y TF_STATE_BUCKET
-
-outputs.tf: muestra la URL de la pagina (web_url) y el id de la instancia.
 
 Fuentes:
 https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
