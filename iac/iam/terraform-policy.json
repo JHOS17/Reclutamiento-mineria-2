@@ -43,6 +43,7 @@
         "cloudwatch:*",
         "cloudtrail:*",
         "secretsmanager:*",
+        "acm:*",
         "wafv2:*",
         "ssm:GetParameter",
         "ssm:GetParameters"
