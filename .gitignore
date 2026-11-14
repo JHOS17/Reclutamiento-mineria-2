@@ -3,5 +3,5 @@
 *.tfstate.*
 *.tfplan
 crash.log
-terraform/backend.hcl
+iac/terraform/backend.hcl
 .idea/
