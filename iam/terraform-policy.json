@@ -29,13 +29,84 @@
       ]
     },
     {
-      "Sid": "EC2SoloEnRegion",
+      "Sid": "ServiciosDelAvance",
       "Effect": "Allow",
-      "Action": "ec2:*",
+      "Action": [
+        "ec2:*",
+        "elasticloadbalancing:*",
+        "autoscaling:*",
+        "rds:*",
+        "s3:*",
+        "sns:*",
+        "kms:*",
+        "logs:*",
+        "cloudwatch:*",
+        "cloudtrail:*",
+        "secretsmanager:*",
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
       "Resource": "*",
       "Condition": {
         "StringEquals": {
-          "aws:RequestedRegion": "us-east-2"
+          "aws:RequestedRegion": [
+            "us-east-2",
+            "sa-east-1"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "Lectura",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:GetInstanceProfile",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RolesDelProyecto",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PassRole",
+        "iam:CreateInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:TagInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile"
+      ],
+      "Resource": [
+        "arn:aws:iam::<AWS_ACCOUNT_ID>:role/minero-*",
+        "arn:aws:iam::<AWS_ACCOUNT_ID>:instance-profile/minero-*"
+      ]
+    },
+    {
+      "Sid": "RolesVinculadosAServicios",
+      "Effect": "Allow",
+      "Action": "iam:CreateServiceLinkedRole",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "iam:AWSServiceName": [
+            "autoscaling.amazonaws.com",
+            "elasticloadbalancing.amazonaws.com",
+            "rds.amazonaws.com"
+          ]
         }
       }
     }

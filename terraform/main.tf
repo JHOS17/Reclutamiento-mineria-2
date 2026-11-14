@@ -17,4 +17,19 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+
+  default_tags {
+    tags = local.tags
+  }
 }
+
+provider "aws" {
+  alias  = "replica"
+  region = var.replica_region
+
+  default_tags {
+    tags = local.tags
+  }
+}
+
+data "aws_caller_identity" "current" {}
