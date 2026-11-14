@@ -83,9 +83,15 @@ variable "db_max_connections_alarm" {
 }
 
 variable "deletion_protection" {
-  description = "Proteccion contra borrado del ALB y RDS"
+  description = "Proteccion contra borrado de RDS y de los buckets"
   type        = bool
   default     = false
+}
+
+variable "alb_deletion_protection" {
+  description = "Proteccion contra borrado del ALB"
+  type        = bool
+  default     = true
 }
 
 variable "alert_email" {

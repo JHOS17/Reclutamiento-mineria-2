@@ -1,3 +1,4 @@
+# CKV_AWS_150: el balanceador se podia borrar por error
 resource "aws_lb" "main" {
   name                       = "${local.name}-alb"
   load_balancer_type         = "application"
@@ -5,7 +6,7 @@ resource "aws_lb" "main" {
   security_groups            = [aws_security_group.alb.id]
   subnets                    = aws_subnet.public[*].id
   drop_invalid_header_fields = true
-  enable_deletion_protection = var.deletion_protection
+  enable_deletion_protection = var.alb_deletion_protection
   desync_mitigation_mode     = "strictest"
 
   access_logs {
@@ -80,10 +81,12 @@ resource "aws_acm_certificate" "alb" {
 }
 
 # CKV_AWS_2: el balanceador recibia la informacion de los usuarios sin cifrar
+# CKV_AWS_103: ahora solo acepta versiones seguras de cifrado
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = aws_acm_certificate.alb.arn
 
   default_action {
