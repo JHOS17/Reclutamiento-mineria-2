@@ -1,7 +1,11 @@
-.terraform/
+*.iml
+*.tfplan
 *.tfstate
 *.tfstate.*
-*.tfplan
+.DS_Store
+.idea/
+.terraform/
 crash.log
 iac/terraform/backend.hcl
-.idea/
+result.xml
+target/

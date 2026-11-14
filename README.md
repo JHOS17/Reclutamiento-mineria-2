@@ -104,3 +104,21 @@ Actions > Destruir Infraestructura > Run workflow, rama development, escribir de
 
 Fuentes:
 https://developer.hashicorp.com/terraform/cli/commands
+---
+
+## Estructura unificada
+
+```
+backend/   Spring Boot 3.3 (Java 17): login JWT + roles. H2 en memoria.
+iac/       Terraform (iac/terraform) + politicas IAM (iac/iam).
+.github/   CI: tests del backend + validar/aplicar/destruir Terraform.
+```
+
+### Backend local
+```
+cd backend
+mvn verify            # compila y corre tests
+mvn spring-boot:run   # http://localhost:8080
+```
+Admin de prueba (solo perfil distinto de `prod`): `admin@mineria.com` / `AdminMineria123!`.
+En produccion define `JWT_SECRETO` (min. 32 bytes) y `SPRING_PROFILES_ACTIVE=prod`.
