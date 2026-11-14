@@ -76,6 +76,12 @@ variable "db_backup_days" {
   default     = 7
 }
 
+variable "db_deletion_protection" {
+  description = "Proteccion contra borrado de RDS"
+  type        = bool
+  default     = true
+}
+
 variable "db_max_connections_alarm" {
   description = "Conexiones de RDS que disparan la alarma"
   type        = number
@@ -83,7 +89,7 @@ variable "db_max_connections_alarm" {
 }
 
 variable "deletion_protection" {
-  description = "Proteccion contra borrado de RDS y de los buckets"
+  description = "Proteccion contra borrado de los buckets"
   type        = bool
   default     = false
 }
