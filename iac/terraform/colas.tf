@@ -21,3 +21,7 @@ resource "aws_sqs_queue" "cv" {
     maxReceiveCount     = 5
   })
 }
+
+output "cola_cv_url" {
+  value = aws_sqs_queue.cv.url
+}
