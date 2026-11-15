@@ -12,3 +12,20 @@ resource "aws_ecr_repository" "backend" {
     kms_key         = aws_kms_key.main.arn
   }
 }
+
+resource "aws_ecr_lifecycle_policy" "backend" {
+  repository = aws_ecr_repository.backend.name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Conservar las 5 imagenes mas recientes"
+      selection = {
+        tagStatus   = "any"
+        countType   = "imageCountMoreThan"
+        countNumber = 5
+      }
+      action = { type = "expire" }
+    }]
+  })
+}
