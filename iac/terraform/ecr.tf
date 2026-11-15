@@ -43,6 +43,7 @@ resource "aws_ssm_parameter" "jwt" {
 }
 
 resource "aws_ssm_parameter" "imagen_backend" {
+  #checkov:skip=CKV2_AWS_34:Solo guarda la version de la imagen, no es un dato secreto
   name  = "/${local.name}/backend/imagen"
   type  = "String"
   value = "ninguna"
