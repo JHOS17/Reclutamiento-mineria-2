@@ -29,3 +29,15 @@ resource "aws_ecr_lifecycle_policy" "backend" {
     }]
   })
 }
+
+resource "random_password" "jwt" {
+  length  = 48
+  special = false
+}
+
+resource "aws_ssm_parameter" "jwt" {
+  name   = "/${local.name}/backend/jwt-secret"
+  type   = "SecureString"
+  key_id = aws_kms_key.main.arn
+  value  = random_password.jwt.result
+}
