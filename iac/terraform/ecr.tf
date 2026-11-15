@@ -41,3 +41,13 @@ resource "aws_ssm_parameter" "jwt" {
   key_id = aws_kms_key.main.arn
   value  = random_password.jwt.result
 }
+
+resource "aws_ssm_parameter" "imagen_backend" {
+  name  = "/${local.name}/backend/imagen"
+  type  = "String"
+  value = "ninguna"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
