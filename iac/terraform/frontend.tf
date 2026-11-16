@@ -1,4 +1,6 @@
 resource "aws_s3_bucket" "frontend" {
+  #checkov:skip=CKV_AWS_144:Son archivos publicos de la pagina; si se pierden se vuelven a subir desde el codigo
+  #checkov:skip=CKV2_AWS_62:Los archivos de la pagina solo se suben al desplegar; no hay eventos que procesar
   bucket        = "${local.name}-frontend-${local.account_id}"
   force_destroy = true
 }
@@ -127,6 +129,11 @@ data "aws_cloudfront_response_headers_policy" "seguridad" {
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
+  #checkov:skip=CKV_AWS_68:El WAF ya protege al balanceador, por donde pasan todas las llamadas a la API; la pagina solo entrega archivos fijos
+  #checkov:skip=CKV_AWS_86:Los registros de acceso necesitan ACL en el bucket de registros, que estan desactivadas por seguridad; el ALB ya guarda los registros de la API
+  #checkov:skip=CKV_AWS_310:Hay un solo bucket de la pagina; si falla se vuelve a subir desde el codigo
+  #checkov:skip=CKV_AWS_374:La plataforma es internacional, asi que no se bloquean paises
+  #checkov:skip=CKV2_AWS_47:El WAF con las reglas contra Log4j esta en el balanceador, delante del backend Java
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
