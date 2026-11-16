@@ -52,3 +52,11 @@ resource "aws_ssm_parameter" "imagen_backend" {
     ignore_changes = [value]
   }
 }
+
+output "ecr_repository_url" {
+  value = aws_ecr_repository.backend.repository_url
+}
+
+output "imagen_parametro" {
+  value = aws_ssm_parameter.imagen_backend.name
+}
