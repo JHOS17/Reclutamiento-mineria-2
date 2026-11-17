@@ -71,6 +71,7 @@ resource "aws_cloudwatch_log_group" "rds" {
 resource "aws_db_instance" "main" {
   #checkov:skip=CKV_AWS_157:Una sola zona por la capa gratuita; si falla se restaura desde el respaldo en la zona B en maximo 30 minutos
   identifier                            = "${local.name}-postgres"
+  availability_zone                     = local.azs[0]
   engine                                = "postgres"
   engine_version                        = var.db_engine_version
   instance_class                        = var.db_instance_class
