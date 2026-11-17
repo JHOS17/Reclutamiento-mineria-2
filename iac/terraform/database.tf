@@ -90,7 +90,7 @@ resource "aws_db_instance" "main" {
   parameter_group_name                  = aws_db_parameter_group.main.name
   publicly_accessible                   = false
   backup_retention_period               = var.db_backup_days
-  backup_window                         = "07:00-08:00"
+  backup_window                         = "03:00-04:00"
   maintenance_window                    = "sun:08:30-sun:09:30"
   copy_tags_to_snapshot                 = true
   deletion_protection                   = var.db_deletion_protection
