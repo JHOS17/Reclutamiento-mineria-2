@@ -64,6 +64,12 @@ resource "aws_iam_role_policy" "web" {
         Resource = aws_ecr_repository.backend.arn
       },
       {
+        Sid      = "ParametrosBackend"
+        Effect   = "Allow"
+        Action   = "ssm:GetParameter"
+        Resource = [aws_ssm_parameter.jwt.arn, aws_ssm_parameter.imagen_backend.arn]
+      },
+      {
         Sid      = "Cifrado"
         Effect   = "Allow"
         Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
