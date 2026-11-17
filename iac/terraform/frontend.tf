@@ -105,6 +105,11 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_protocol                  = "sigv4"
 }
 
+resource "random_password" "origen_cloudfront" {
+  length  = 32
+  special = false
+}
+
 resource "aws_cloudfront_function" "spa" {
   name    = "${local.name}-spa"
   runtime = "cloudfront-js-2.0"
