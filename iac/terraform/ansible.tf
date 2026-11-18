@@ -36,3 +36,57 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "ansible" {
     }
   }
 }
+
+resource "aws_s3_bucket_logging" "ansible" {
+  bucket        = aws_s3_bucket.ansible.id
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3/ansible/"
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "ansible" {
+  bucket = aws_s3_bucket.ansible.id
+
+  rule {
+    id     = "temporales"
+    status = "Enabled"
+
+    filter {}
+
+    expiration {
+      days = 1
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 1
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "ansible" {
+  bucket = aws_s3_bucket.ansible.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "SoloTls"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.ansible.arn, "${aws_s3_bucket.ansible.arn}/*"]
+      Condition = {
+        Bool = { "aws:SecureTransport" = "false" }
+      }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.ansible]
+}
+
+resource "aws_s3_bucket_notification" "ansible" {
+  bucket      = aws_s3_bucket.ansible.id
+  eventbridge = true
+}
