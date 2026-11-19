@@ -152,3 +152,11 @@ resource "aws_db_instance" "restaurada" {
     Name = "${local.name}-postgres-restaurada"
   }
 }
+
+locals {
+  db_activa = var.restaurar_bd ? aws_db_instance.restaurada[0] : aws_db_instance.main
+}
+
+output "rds_activa" {
+  value = local.db_activa.address
+}
