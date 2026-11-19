@@ -114,6 +114,7 @@ resource "aws_db_instance" "main" {
 }
 
 resource "aws_db_instance" "restaurada" {
+  #checkov:skip=CKV_AWS_157:Es la copia de recuperacion en la otra zona que se crea solo cuando falla la principal
   count                                 = var.restaurar_bd ? 1 : 0
   identifier                            = "${local.name}-postgres-restaurada"
   instance_class                        = var.db_instance_class
