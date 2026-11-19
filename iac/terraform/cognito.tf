@@ -32,4 +32,15 @@ resource "aws_cognito_user_pool" "main" {
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
+
+  schema {
+    name                = "pais"
+    attribute_data_type = "String"
+    mutable             = true
+
+    string_attribute_constraints {
+      min_length = 2
+      max_length = 2
+    }
+  }
 }
