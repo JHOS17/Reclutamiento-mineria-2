@@ -22,6 +22,19 @@ resource "aws_sqs_queue" "cv" {
   })
 }
 
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private[0].id]
+  security_group_ids  = [aws_security_group.endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${local.name}-endpoint-secretsmanager"
+  }
+}
+
 output "cola_cv_url" {
   value = aws_sqs_queue.cv.url
 }
