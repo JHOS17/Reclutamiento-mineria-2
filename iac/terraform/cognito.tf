@@ -62,3 +62,10 @@ resource "aws_cognito_user_pool_client" "frontend" {
     refresh_token = "days"
   }
 }
+
+resource "aws_cognito_user_group" "roles" {
+  for_each     = toset(["POSTULANTE", "EMPRESA", "ADMIN"])
+  name         = each.value
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Usuarios con rol ${each.value}"
+}
