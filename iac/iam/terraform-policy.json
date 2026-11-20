@@ -46,6 +46,8 @@
         "acm:*",
         "wafv2:*",
         "ecr:*",
+        "sqs:*",
+        "lambda:*",
         "ssm:GetParameter",
         "ssm:GetParameters",
         "ssm:PutParameter",
