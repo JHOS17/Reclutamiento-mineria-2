@@ -13,7 +13,7 @@ resource "aws_sqs_queue" "cv_dlq" {
 resource "aws_sqs_queue" "cv" {
   name                       = local.colas.cv
   kms_master_key_id          = aws_kms_key.main.arn
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = 180
   message_retention_seconds  = 345600
 
   redrive_policy = jsonencode({
