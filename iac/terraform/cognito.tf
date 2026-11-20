@@ -69,3 +69,11 @@ resource "aws_cognito_user_group" "roles" {
   user_pool_id = aws_cognito_user_pool.main.id
   description  = "Usuarios con rol ${each.value}"
 }
+
+output "cognito_user_pool_id" {
+  value = aws_cognito_user_pool.main.id
+}
+
+output "cognito_client_id" {
+  value = aws_cognito_user_pool_client.frontend.id
+}
