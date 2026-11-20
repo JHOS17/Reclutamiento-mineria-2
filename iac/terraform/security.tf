@@ -79,6 +79,14 @@ resource "aws_security_group" "db" {
     security_groups = [aws_security_group.web.id]
   }
 
+  ingress {
+    description     = "PostgreSQL desde la Lambda de CV"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda.id]
+  }
+
   tags = {
     Name = "${local.name}-db-sg"
   }

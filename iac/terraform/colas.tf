@@ -39,6 +39,12 @@ output "cola_cv_url" {
   value = aws_sqs_queue.cv.url
 }
 
+data "archive_file" "procesar_cv" {
+  type        = "zip"
+  source_dir  = "${path.module}/../lambdas/procesar_cv"
+  output_path = "${path.module}/.build/procesar_cv.zip"
+}
+
 resource "aws_cloudwatch_log_group" "lambda" {
   for_each          = toset(["procesar-cv"])
   name              = "/aws/lambda/${local.name}-${each.value}"
@@ -109,4 +115,44 @@ resource "aws_iam_role_policy" "procesar_cv" {
       }
     ]
   })
+}
+
+resource "aws_lambda_function" "procesar_cv" {
+  function_name    = "${local.name}-procesar-cv"
+  role             = aws_iam_role.procesar_cv.arn
+  runtime          = "python3.12"
+  handler          = "app.handler"
+  filename         = data.archive_file.procesar_cv.output_path
+  source_code_hash = data.archive_file.procesar_cv.output_base64sha256
+  timeout          = 30
+  memory_size      = 256
+  kms_key_arn      = aws_kms_key.main.arn
+
+  vpc_config {
+    subnet_ids         = aws_subnet.private[*].id
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  environment {
+    variables = {
+      DB_HOST       = local.db_activa.address
+      DB_NAME       = aws_db_instance.main.db_name
+      CVS_BUCKET    = aws_s3_bucket.cvs.id
+      DB_SECRET_ARN = local.db_activa.master_user_secret[0].secret_arn
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.lambda, aws_iam_role_policy_attachment.procesar_cv_vpc, aws_vpc_endpoint.secretsmanager]
+}
+
+resource "aws_lambda_event_source_mapping" "procesar_cv" {
+  event_source_arn                   = aws_sqs_queue.cv.arn
+  function_name                      = aws_lambda_function.procesar_cv.arn
+  batch_size                         = 5
+  maximum_batching_window_in_seconds = 5
+  function_response_types            = ["ReportBatchItemFailures"]
 }
