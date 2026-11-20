@@ -45,8 +45,14 @@
         "secretsmanager:*",
         "acm:*",
         "wafv2:*",
+        "ecr:*",
         "ssm:GetParameter",
-        "ssm:GetParameters"
+        "ssm:GetParameters",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter",
+        "ssm:DescribeParameters",
+        "ssm:AddTagsToResource",
+        "ssm:ListTagsForResource"
       ],
       "Resource": "*",
       "Condition": {
