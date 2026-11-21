@@ -67,6 +67,12 @@
       }
     },
     {
+      "Sid": "CloudFrontGlobal",
+      "Effect": "Allow",
+      "Action": "cloudfront:*",
+      "Resource": "*"
+    },
+    {
       "Sid": "Lectura",
       "Effect": "Allow",
       "Action": [
