@@ -54,7 +54,8 @@
         "ssm:DeleteParameter",
         "ssm:DescribeParameters",
         "ssm:AddTagsToResource",
-        "ssm:ListTagsForResource"
+        "ssm:ListTagsForResource",
+        "cognito-idp:*"
       ],
       "Resource": "*",
       "Condition": {
