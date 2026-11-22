@@ -118,6 +118,9 @@ resource "aws_iam_role_policy" "procesar_cv" {
 }
 
 resource "aws_lambda_function" "procesar_cv" {
+  #checkov:skip=CKV_AWS_115:Las cuentas nuevas solo tienen 10 ejecuciones simultaneas y AWS no deja reservar parte de ellas
+  #checkov:skip=CKV_AWS_116:Los mensajes que fallan 5 veces ya pasan a la cola de errores de SQS
+  #checkov:skip=CKV_AWS_272:El codigo lo sube Terraform desde el repositorio revisado por nosotros
   function_name    = "${local.name}-procesar-cv"
   role             = aws_iam_role.procesar_cv.arn
   runtime          = "python3.12"
