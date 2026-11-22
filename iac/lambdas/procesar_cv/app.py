@@ -31,6 +31,7 @@ VALUES (:documento, :bucket, :clave, :sha256, :tamano, :tipo, :estado, :motivo)
 ON CONFLICT (clave, sha256) DO NOTHING
 """
 
+TAMANO_MAXIMO = 5 * 1024 * 1024
 _conexion = None
 
 
@@ -55,6 +56,8 @@ def revisar(bucket, clave):
     objeto = s3.get_object(Bucket=bucket, Key=clave)
     tamano = objeto["ContentLength"]
     tipo = objeto.get("ContentType")
+    if tamano > TAMANO_MAXIMO:
+        return None, tamano, tipo, "RECHAZADO", "Supera 5 MB"
     contenido = objeto["Body"].read()
     huella = hashlib.sha256(contenido).hexdigest()
     if not contenido.startswith(b"%PDF-"):
